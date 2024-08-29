@@ -1,3 +1,5 @@
+use std::env;
+
 use reqwest::Client;
 use serde_json::json;
 use tokio::{fs::File, io::AsyncReadExt};
@@ -5,8 +7,9 @@ use tokio::{fs::File, io::AsyncReadExt};
 use crate::error::{ErrorResponse, TikTokApiError};
 
 use super::{
-    PostInfo, PostStatusData, PostStatusResponse, Source, SourceInfoBuilder, VideoInitRequest,
-    VideoInitRequestBuilder, VideoInitResponse, VideoInitResponseData,
+    MediaType, PhotoInitRequest, PhotoInitRequestBuilder, PostInfo, PostMode, PostStatusData,
+    PostStatusResponse, Source, SourceInfoBuilder, VideoInitRequest, VideoInitRequestBuilder,
+    VideoInitResponse, VideoInitResponseData,
 };
 
 pub struct Service {
@@ -15,12 +18,25 @@ pub struct Service {
 }
 
 impl Service {
+    /// Creates a new instance of the Service with the token from the environment variable `TIKTOK_API_TOKEN`.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the `TIKTOK_API_TOKEN` environment variable is not set.
+    pub fn new() -> Self {
+        let token = env::var("TIKTOK_API_TOKEN").expect("TIKTOK_API_TOKEN must be set");
+        Self {
+            token,
+            base_url: String::from("https://open.tiktokapis.com"),
+        }
+    }
+
     /// Creates a new instance of the Service with the provided token.
     ///
     /// # Arguments
     ///
     /// * `token` - A string slice that holds the API token.
-    pub fn new(token: &str) -> Self {
+    pub fn with_token(token: &str) -> Self {
         Self {
             token: token.into(),
             base_url: String::from("https://open.tiktokapis.com"),
@@ -263,6 +279,93 @@ impl Service {
 
         // Call the post_video function
         let response_data = self.post_video(video_init_request).await?;
+
+        // Check the post status
+        self.get_post_status(&response_data.publish_id).await
+    }
+
+    /// Initializes a photo post on TikTok.
+    ///
+    /// # Arguments
+    ///
+    /// * `photo_init_request` - The request data for initializing the photo post.
+    ///
+    /// # Returns
+    ///
+    /// * `Result<VideoInitResponseData, TikTokApiError>` - The response data or an error.
+    pub async fn post_photo(
+        &self,
+        photo_init_request: PhotoInitRequest,
+    ) -> Result<VideoInitResponseData, TikTokApiError> {
+        let url = format!("{}/v2/post/publish/content/init/", self.base_url);
+        let client = Client::new();
+
+        let response = client
+            .post(&url)
+            .header("Authorization", format!("Bearer {}", self.token))
+            .header("Content-Type", "application/json; charset=UTF-8")
+            .json(&photo_init_request)
+            .send()
+            .await
+            .map_err(|e| {
+                TikTokApiError::Unknown("request_failed".into(), e.to_string(), "".into())
+            })?;
+
+        let status = response.status();
+        let body = response.text().await.map_err(|e| {
+            TikTokApiError::Unknown("response_read_failed".into(), e.to_string(), "".into())
+        })?;
+
+        let photo_init_response: VideoInitResponse = serde_json::from_str(&body).map_err(|e| {
+            TikTokApiError::Unknown("parse_failed".into(), e.to_string(), "".into())
+        })?;
+
+        if status.is_success() && photo_init_response.error.code == "ok" {
+            Ok(photo_init_response.data)
+        } else {
+            Err(TikTokApiError::from(photo_init_response.error))
+        }
+    }
+
+    /// Simplified function to upload a photo from URLs.
+    ///
+    /// This function combines the steps of initializing a photo post and checking the post status
+    /// into a single function call.
+    ///
+    /// The first photo will be the cover
+    ///
+    /// # Arguments
+    ///
+    /// * `post_info` - The post information.
+    /// * `photo_urls` - The URLs of the photos to be uploaded.
+    ///
+    /// # Returns
+    ///
+    /// * `Result<PostStatusData, TikTokApiError>` - The status data or an error.
+    pub async fn upload_photo_from_urls(
+        &self,
+        post_info: PostInfo,
+        photo_urls: Vec<String>,
+    ) -> Result<PostStatusData, TikTokApiError> {
+        // Create SourceInfo for PULL_FROM_URL
+        let source_info = SourceInfoBuilder::default()
+            .source(Source::PullFromUrl)
+            .photo_images(Some(photo_urls))
+            .photo_cover_index(Some(1)) // Assuming the first photo is the cover
+            .build()
+            .unwrap();
+
+        // Create PhotoInitRequest using the generated builder
+        let photo_init_request = PhotoInitRequestBuilder::default()
+            .post_info(post_info)
+            .source_info(source_info)
+            .post_mode(PostMode::DirectPost)
+            .media_type(MediaType::Photo)
+            .build()
+            .unwrap();
+
+        // Call the post_photo function
+        let response_data = self.post_photo(photo_init_request).await?;
 
         // Check the post status
         self.get_post_status(&response_data.publish_id).await

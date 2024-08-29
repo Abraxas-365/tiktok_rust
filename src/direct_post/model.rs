@@ -19,6 +19,19 @@ pub enum PrivacyLevel {
     SelfOnly,
 }
 
+#[derive(Clone, Serialize, Deserialize, Debug)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum PostMode {
+    DirectPost,
+    MediaUpload,
+}
+
+#[derive(Clone, Serialize, Deserialize, Debug)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum MediaType {
+    Photo,
+}
+
 #[derive(Clone, Serialize, Deserialize, Debug, Builder)]
 #[builder(setter(into))]
 pub struct PostInfo {
@@ -38,6 +51,8 @@ pub struct SourceInfo {
     pub chunk_size: Option<u64>,
     pub total_chunk_count: Option<u32>,
     pub video_url: Option<String>,
+    pub photo_cover_index: Option<u32>,
+    pub photo_images: Option<Vec<String>>,
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug, Builder)]
@@ -57,6 +72,15 @@ pub struct VideoInitResponseData {
 pub struct VideoInitResponse {
     pub data: VideoInitResponseData,
     pub error: ErrorResponse,
+}
+
+#[derive(Clone, Serialize, Deserialize, Debug, Builder)]
+#[builder(setter(into))]
+pub struct PhotoInitRequest {
+    pub post_info: PostInfo,
+    pub source_info: SourceInfo,
+    pub post_mode: PostMode,
+    pub media_type: MediaType,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

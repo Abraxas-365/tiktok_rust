@@ -1,3 +1,5 @@
+use std::env;
+
 use reqwest::Client;
 
 use crate::error::TikTokApiError;
@@ -10,12 +12,36 @@ pub struct Service {
 }
 
 impl Service {
-    pub fn new(token: &str) -> Self {
+    /// Creates a new instance of the Service with the token from the environment variable `TIKTOK_API_TOKEN`.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the `TIKTOK_API_TOKEN` environment variable is not set.
+    pub fn new() -> Self {
+        let token = env::var("TIKTOK_API_TOKEN").expect("TIKTOK_API_TOKEN must be set");
+        Self {
+            token,
+            base_url: String::from("https://open.tiktokapis.com"),
+        }
+    }
+
+    /// Creates a new instance of the Service with the provided token.
+    ///
+    /// # Arguments
+    ///
+    /// * `token` - A string slice that holds the API token.
+    pub fn with_token(token: &str) -> Self {
         Self {
             token: token.into(),
             base_url: String::from("https://open.tiktokapis.com"),
         }
     }
+
+    /// Sets a custom base URL for the Service.
+    ///
+    /// # Arguments
+    ///
+    /// * `base_url` - A string slice that holds the custom base URL.
     pub fn with_base_url(mut self, base_url: &str) -> Self {
         self.base_url = base_url.into();
         self
