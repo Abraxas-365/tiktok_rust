@@ -10,11 +10,20 @@ pub enum Source {
     PullFromUrl,
 }
 
+#[derive(Clone, Serialize, Deserialize, Debug)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum PrivacyLevel {
+    PublicToEveryone,
+    MutualFollowFriends,
+    FollowerOfCreator,
+    SelfOnly,
+}
+
 #[derive(Clone, Serialize, Deserialize, Debug, Builder)]
 #[builder(setter(into))]
 pub struct PostInfo {
     pub title: String,
-    pub privacy_level: String,
+    pub privacy_level: PrivacyLevel,
     pub disable_duet: bool,
     pub disable_comment: bool,
     pub disable_stitch: bool,
