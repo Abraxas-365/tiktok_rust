@@ -1,38 +1,17 @@
-use std::env;
-
+use super::{CreatorData, CreatorInfoResponse};
+use crate::error::TikTokApiError;
 use reqwest::Client;
 
-use crate::error::TikTokApiError;
-
-use super::{CreatorData, CreatorInfoResponse};
-
 pub struct Service {
-    token: String,
     base_url: String,
 }
 
 impl Service {
-    /// Creates a new instance of the Service with the token from the environment variable `TIKTOK_API_TOKEN`.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the `TIKTOK_API_TOKEN` environment variable is not set.
+    /// Creates a new instance of the Service.
     pub fn new() -> Self {
-        let token = env::var("TIKTOK_API_TOKEN").expect("TIKTOK_API_TOKEN must be set");
         Self {
-            token,
             base_url: String::from("https://open.tiktokapis.com"),
         }
-    }
-
-    ///Sets a token for the Service
-    ///
-    /// # Arguments
-    ///
-    /// * `token` - A string slice that holds the API token.
-    pub fn with_token(mut self, token: &str) -> Self {
-        self.token = token.into();
-        self
     }
 
     /// Sets a custom base URL for the Service.
@@ -44,21 +23,23 @@ impl Service {
         self.base_url = base_url.into();
         self
     }
-}
 
-impl Service {
     /// Retrieves creator information from the TikTok API.
+    ///
+    /// # Arguments
+    ///
+    /// * `token` - The API token.
     ///
     /// # Returns
     ///
     /// A `Result` containing a `CreatorData` on success, or a `TikTokApiError` on failure.
-    pub async fn get_creator_info(&self) -> Result<CreatorData, TikTokApiError> {
+    pub async fn get_creator_info(&self, token: &str) -> Result<CreatorData, TikTokApiError> {
         let url = format!("{}/v2/post/publish/creator_info/query/", self.base_url);
         let client = Client::new();
 
         let response = client
             .post(&url)
-            .header("Authorization", format!("Bearer {}", self.token))
+            .header("Authorization", format!("Bearer {}", token))
             .header("Content-Type", "application/json; charset=UTF-8")
             .send()
             .await

@@ -2,7 +2,7 @@ use std::env;
 
 use reqwest::Client;
 
-use crate::error::TikTokApiError;
+use crate::error::{ErrorResponse, TikTokApiError};
 
 use super::TokenResponse;
 

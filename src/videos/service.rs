@@ -1,38 +1,17 @@
-use std::env;
-
+use super::{QueryRequest, QueryVideoResponse, QueryVideoResponseData};
+use crate::error::TikTokApiError;
 use reqwest::Client;
 
-use crate::error::TikTokApiError;
-
-use super::{QueryRequest, QueryVideoResponse, QueryVideoResponseData};
-
 pub struct Service {
-    token: String,
     base_url: String,
 }
 
 impl Service {
-    /// Creates a new instance of the Service with the token from the environment variable `TIKTOK_API_TOKEN`.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the `TIKTOK_API_TOKEN` environment variable is not set.
+    /// Creates a new instance of the Service.
     pub fn new() -> Self {
-        let token = env::var("TIKTOK_API_TOKEN").expect("TIKTOK_API_TOKEN must be set");
         Self {
-            token,
             base_url: String::from("https://open.tiktokapis.com"),
         }
-    }
-
-    ///Sets a token for the Service
-    ///
-    /// # Arguments
-    ///
-    /// * `token` - A string slice that holds the API token.
-    pub fn with_token(mut self, token: &str) -> Self {
-        self.token = token.into();
-        self
     }
 
     /// Sets a custom base URL for the Service.
@@ -44,13 +23,12 @@ impl Service {
         self.base_url = base_url.into();
         self
     }
-}
 
-impl Service {
     /// Queries videos using the TikTok API.
     ///
     /// # Arguments
     ///
+    /// * `token` - The API token.
     /// * `request` - A `QueryRequest` struct that holds the query parameters.
     ///
     /// # Returns
@@ -58,6 +36,7 @@ impl Service {
     /// A `Result` containing a `QueryVideoResponseData` on success, or a `TikTokApiError` on failure.
     pub async fn query_videos(
         &self,
+        token: &str,
         request: QueryRequest,
     ) -> Result<QueryVideoResponseData, TikTokApiError> {
         let client = Client::new();
@@ -68,7 +47,7 @@ impl Service {
 
         let response = client
             .post(&url)
-            .header("Authorization", format!("Bearer {}", self.token))
+            .header("Authorization", format!("Bearer {}", token))
             .header("Content-Type", "application/json")
             .json(&request)
             .send()
