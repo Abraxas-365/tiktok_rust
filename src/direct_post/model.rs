@@ -49,3 +49,15 @@ pub struct VideoInitResponse {
     pub data: VideoInitResponseData,
     pub error: ErrorResponse,
 }
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct PostStatusResponse {
+    pub data: PostStatusData,
+    pub error: ErrorResponse,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct PostStatusData {
+    pub publish_id: String,
+    pub status: String,
+}
