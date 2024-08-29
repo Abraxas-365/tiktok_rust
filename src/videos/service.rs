@@ -73,19 +73,16 @@ impl Service {
             .json(&request)
             .send()
             .await
-            .map_err(|e| {
-                TikTokApiError::Unknown("request_failed".into(), e.to_string(), "".into())
-            })?;
+            .map_err(|e| TikTokApiError::RequestFailed(e.to_string()))?;
 
         let status = response.status();
-        let body = response.text().await.map_err(|e| {
-            TikTokApiError::Unknown("response_read_failed".into(), e.to_string(), "".into())
-        })?;
+        let body = response
+            .text()
+            .await
+            .map_err(|e| TikTokApiError::ResponseReadFailed(e.to_string()))?;
 
         let query_video_response: QueryVideoResponse =
-            serde_json::from_str(&body).map_err(|e| {
-                TikTokApiError::Unknown("parse_failed".into(), e.to_string(), "".into())
-            })?;
+            serde_json::from_str(&body).map_err(|e| TikTokApiError::ParseFailed(e.to_string()))?;
 
         if status.is_success() && query_video_response.error.code == "ok" {
             Ok(query_video_response.data)

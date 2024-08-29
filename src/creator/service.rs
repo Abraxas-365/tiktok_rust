@@ -47,9 +47,11 @@ impl Service {
 }
 
 impl Service {
-    // curl --location --request POST 'https://open.tiktokapis.com/v2/post/publish/creator_info/query/' \
-    // --header 'Authorization: Bearer act.example12345Example12345Example' \
-    // --header 'Content-Type: application/json; charset=UTF-8'
+    /// Retrieves creator information from the TikTok API.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing a `CreatorData` on success, or a `TikTokApiError` on failure.
     pub async fn get_creator_info(&self) -> Result<CreatorData, TikTokApiError> {
         let url = format!("{}/v2/post/publish/creator_info/query/", self.base_url);
         let client = Client::new();
@@ -60,19 +62,16 @@ impl Service {
             .header("Content-Type", "application/json; charset=UTF-8")
             .send()
             .await
-            .map_err(|e| {
-                TikTokApiError::Unknown("request_failed".into(), e.to_string(), "".into())
-            })?;
+            .map_err(|e| TikTokApiError::RequestFailed(e.to_string()))?;
 
         let status = response.status();
-        let body = response.text().await.map_err(|e| {
-            TikTokApiError::Unknown("response_read_failed".into(), e.to_string(), "".into())
-        })?;
+        let body = response
+            .text()
+            .await
+            .map_err(|e| TikTokApiError::ResponseReadFailed(e.to_string()))?;
 
         let creator_info_response: CreatorInfoResponse =
-            serde_json::from_str(&body).map_err(|e| {
-                TikTokApiError::Unknown("parse_failed".into(), e.to_string(), "".into())
-            })?;
+            serde_json::from_str(&body).map_err(|e| TikTokApiError::ParseFailed(e.to_string()))?;
 
         if status.is_success() && creator_info_response.error.code == "ok" {
             Ok(creator_info_response.data)

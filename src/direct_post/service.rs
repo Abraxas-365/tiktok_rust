@@ -76,18 +76,16 @@ impl Service {
             .json(&video_init_request)
             .send()
             .await
-            .map_err(|e| {
-                TikTokApiError::Unknown("request_failed".into(), e.to_string(), "".into())
-            })?;
+            .map_err(|e| TikTokApiError::RequestFailed(e.to_string()))?;
 
         let status = response.status();
-        let body = response.text().await.map_err(|e| {
-            TikTokApiError::Unknown("response_read_failed".into(), e.to_string(), "".into())
-        })?;
+        let body = response
+            .text()
+            .await
+            .map_err(|e| TikTokApiError::ResponseReadFailed(e.to_string()))?;
 
-        let video_init_response: VideoInitResponse = serde_json::from_str(&body).map_err(|e| {
-            TikTokApiError::Unknown("parse_failed".into(), e.to_string(), "".into())
-        })?;
+        let video_init_response: VideoInitResponse =
+            serde_json::from_str(&body).map_err(|e| TikTokApiError::ParseFailed(e.to_string()))?;
 
         if status.is_success() && video_init_response.error.code == "ok" {
             Ok(video_init_response.data)
@@ -111,14 +109,14 @@ impl Service {
         upload_url: &str,
         file_path: &str,
     ) -> Result<(), TikTokApiError> {
-        let mut file = File::open(file_path).await.map_err(|e| {
-            TikTokApiError::Unknown("file_open_failed".into(), e.to_string(), "".into())
-        })?;
+        let mut file = File::open(file_path)
+            .await
+            .map_err(|e| TikTokApiError::RequestFailed(e.to_string()))?;
 
         let mut buffer = Vec::new();
-        file.read_to_end(&mut buffer).await.map_err(|e| {
-            TikTokApiError::Unknown("file_read_failed".into(), e.to_string(), "".into())
-        })?;
+        file.read_to_end(&mut buffer)
+            .await
+            .map_err(|e| TikTokApiError::ResponseReadFailed(e.to_string()))?;
 
         let client = Client::new();
 
@@ -132,19 +130,17 @@ impl Service {
             .body(buffer)
             .send()
             .await
-            .map_err(|e| {
-                TikTokApiError::Unknown("upload_failed".into(), e.to_string(), "".into())
-            })?;
+            .map_err(|e| TikTokApiError::RequestFailed(e.to_string()))?;
 
         if response.status().is_success() {
             Ok(())
         } else {
-            let body = response.text().await.map_err(|e| {
-                TikTokApiError::Unknown("response_read_failed".into(), e.to_string(), "".into())
-            })?;
-            let error_response: ErrorResponse = serde_json::from_str(&body).map_err(|e| {
-                TikTokApiError::Unknown("parse_failed".into(), e.to_string(), "".into())
-            })?;
+            let body = response
+                .text()
+                .await
+                .map_err(|e| TikTokApiError::ResponseReadFailed(e.to_string()))?;
+            let error_response: ErrorResponse = serde_json::from_str(&body)
+                .map_err(|e| TikTokApiError::ParseFailed(e.to_string()))?;
             Err(TikTokApiError::from(error_response))
         }
     }
@@ -172,19 +168,16 @@ impl Service {
             .json(&json!({ "publish_id": publish_id }))
             .send()
             .await
-            .map_err(|e| {
-                TikTokApiError::Unknown("request_failed".into(), e.to_string(), "".into())
-            })?;
+            .map_err(|e| TikTokApiError::RequestFailed(e.to_string()))?;
 
         let status = response.status();
-        let body = response.text().await.map_err(|e| {
-            TikTokApiError::Unknown("response_read_failed".into(), e.to_string(), "".into())
-        })?;
+        let body = response
+            .text()
+            .await
+            .map_err(|e| TikTokApiError::ResponseReadFailed(e.to_string()))?;
 
         let post_status_response: PostStatusResponse =
-            serde_json::from_str(&body).map_err(|e| {
-                TikTokApiError::Unknown("parse_failed".into(), e.to_string(), "".into())
-            })?;
+            serde_json::from_str(&body).map_err(|e| TikTokApiError::ParseFailed(e.to_string()))?;
 
         if status.is_success() && post_status_response.error.code == "ok" {
             Ok(post_status_response.data)
@@ -305,18 +298,16 @@ impl Service {
             .json(&photo_init_request)
             .send()
             .await
-            .map_err(|e| {
-                TikTokApiError::Unknown("request_failed".into(), e.to_string(), "".into())
-            })?;
+            .map_err(|e| TikTokApiError::RequestFailed(e.to_string()))?;
 
         let status = response.status();
-        let body = response.text().await.map_err(|e| {
-            TikTokApiError::Unknown("response_read_failed".into(), e.to_string(), "".into())
-        })?;
+        let body = response
+            .text()
+            .await
+            .map_err(|e| TikTokApiError::ResponseReadFailed(e.to_string()))?;
 
-        let photo_init_response: VideoInitResponse = serde_json::from_str(&body).map_err(|e| {
-            TikTokApiError::Unknown("parse_failed".into(), e.to_string(), "".into())
-        })?;
+        let photo_init_response: VideoInitResponse =
+            serde_json::from_str(&body).map_err(|e| TikTokApiError::ParseFailed(e.to_string()))?;
 
         if status.is_success() && photo_init_response.error.code == "ok" {
             Ok(photo_init_response.data)

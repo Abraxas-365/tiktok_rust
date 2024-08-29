@@ -31,6 +31,18 @@ pub enum TikTokApiError {
     #[error("Access token is invalid, some fields need additional scopes. Please refer to the error message for more details. Log ID: {0}")]
     ScopePermissionMissed(String),
 
+    #[error("Request failed: {0}")]
+    RequestFailed(String),
+
+    #[error("Response read failed: {0}")]
+    ResponseReadFailed(String),
+
+    #[error("Parse failed: {0}")]
+    ParseFailed(String),
+
+    #[error("API error: {0}, Description: {1}, Log ID: {2}")]
+    ApiError(String, String, String),
+
     #[error("Unknown error occurred. Code: {0}, Message: {1}, Log ID: {2}")]
     Unknown(String, String, String),
 }
