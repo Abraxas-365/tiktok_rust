@@ -988,7 +988,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "tiktok_api"
+name = "tiktok_rust"
 version = "0.0.1"
 dependencies = [
  "reqwest",

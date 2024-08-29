@@ -1,5 +1,5 @@
 [package]
-name = "tiktok_api"
+name = "tiktok_rust"
 version = "0.0.1"
 edition = "2021"
 repository = "https://github.com/Abraxas-365/tiktok_api"
