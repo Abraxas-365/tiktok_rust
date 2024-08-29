@@ -1,0 +1,17 @@
+[package]
+name = "tiktok_api"
+version = "0.0.1"
+edition = "2021"
+repository = "https://github.com/Abraxas-365/tiktok_api"
+license = "MIT"
+description = "A Rust library for interacting with the TikTok API, enabling direct posting of content and querying creator information."
+keywords = ["tiktok", "api", "rust", "social media", "content posting", "video", "photo"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1", features = ["full"] }
+reqwest = { version = "0.12", features = ["json", "stream"] }
+thiserror = "1.0.63"
