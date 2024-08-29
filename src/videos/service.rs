@@ -4,7 +4,7 @@ use reqwest::Client;
 
 use crate::error::TikTokApiError;
 
-use super::{CreatorData, CreatorInfoResponse};
+use super::{QueryRequest, QueryVideoResponse, QueryVideoResponseData};
 
 pub struct Service {
     token: String,
@@ -47,17 +47,30 @@ impl Service {
 }
 
 impl Service {
-    // curl --location --request POST 'https://open.tiktokapis.com/v2/post/publish/creator_info/query/' \
-    // --header 'Authorization: Bearer act.example12345Example12345Example' \
-    // --header 'Content-Type: application/json; charset=UTF-8'
-    pub async fn get_creator_info(&self) -> Result<CreatorData, TikTokApiError> {
-        let url = format!("{}/v2/post/publish/creator_info/query/", self.base_url);
+    /// Queries videos using the TikTok API.
+    ///
+    /// # Arguments
+    ///
+    /// * `request` - A `QueryRequest` struct that holds the query parameters.
+    ///
+    /// # Returns
+    ///
+    /// A `Result` containing a `QueryVideoResponseData` on success, or a `TikTokApiError` on failure.
+    pub async fn query_videos(
+        &self,
+        request: QueryRequest,
+    ) -> Result<QueryVideoResponseData, TikTokApiError> {
         let client = Client::new();
+        let url = format!(
+            "{}/v2/research/video/query/?fields=id,video_description,create_time",
+            self.base_url
+        );
 
         let response = client
             .post(&url)
             .header("Authorization", format!("Bearer {}", self.token))
-            .header("Content-Type", "application/json; charset=UTF-8")
+            .header("Content-Type", "application/json")
+            .json(&request)
             .send()
             .await
             .map_err(|e| {
@@ -69,15 +82,15 @@ impl Service {
             TikTokApiError::Unknown("response_read_failed".into(), e.to_string(), "".into())
         })?;
 
-        let creator_info_response: CreatorInfoResponse =
+        let query_video_response: QueryVideoResponse =
             serde_json::from_str(&body).map_err(|e| {
                 TikTokApiError::Unknown("parse_failed".into(), e.to_string(), "".into())
             })?;
 
-        if status.is_success() && creator_info_response.error.code == "ok" {
-            Ok(creator_info_response.data)
+        if status.is_success() && query_video_response.error.code == "ok" {
+            Ok(query_video_response.data)
         } else {
-            Err(TikTokApiError::from(creator_info_response.error))
+            Err(TikTokApiError::from(query_video_response.error))
         }
     }
 }

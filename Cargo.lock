@@ -1067,7 +1067,7 @@ dependencies = [
 
 [[package]]
 name = "tiktok_rust"
-version = "0.0.2"
+version = "0.0.3"
 dependencies = [
  "derive_builder",
  "reqwest",

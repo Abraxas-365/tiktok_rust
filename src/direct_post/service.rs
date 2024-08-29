@@ -31,16 +31,14 @@ impl Service {
         }
     }
 
-    /// Creates a new instance of the Service with the provided token.
+    ///Sets a token for the Service
     ///
     /// # Arguments
     ///
     /// * `token` - A string slice that holds the API token.
-    pub fn with_token(token: &str) -> Self {
-        Self {
-            token: token.into(),
-            base_url: String::from("https://open.tiktokapis.com"),
-        }
+    pub fn with_token(mut self, token: &str) -> Self {
+        self.token = token.into();
+        self
     }
 
     /// Sets a custom base URL for the Service.
