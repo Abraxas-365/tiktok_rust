@@ -5,7 +5,7 @@ edition = "2021"
 repository = "https://github.com/Abraxas-365/tiktok_api"
 license = "MIT"
 description = "A Rust library for interacting with the TikTok API, enabling direct posting of content and querying creator information."
-keywords = ["tiktok", "api", "social media", "video", "photo"]
+keywords = ["tiktok", "api", "video", "photo"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
