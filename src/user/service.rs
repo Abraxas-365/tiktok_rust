@@ -1,4 +1,7 @@
-use crate::error::{ErrorResponse, TikTokApiError};
+use crate::{
+    error::{ErrorResponse, TikTokApiError},
+    videos::VideoField,
+};
 use reqwest::Client;
 use std::env;
 
@@ -7,7 +10,7 @@ use super::{
     PinnedVideosRequest, PinnedVideosResponse, RepostedVideosData, RepostedVideosRequest,
     RepostedVideosResponse, UserFollowerData, UserFollowersRequest, UserFollowersResponse,
     UserFollowingData, UserFollowingRequest, UserFollowingResponse, UserInfoData, UserInfoRequest,
-    UserInfoResponse, UserLikedVideosData, VideoField,
+    UserInfoResponse, UserLikedVideosData,
 };
 
 pub struct Service {

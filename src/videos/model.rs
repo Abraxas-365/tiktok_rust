@@ -2,6 +2,51 @@ use derive_builder::Builder;
 use serde::{Deserialize, Serialize};
 
 use crate::error::ErrorResponse;
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "snake_case")]
+pub enum VideoField {
+    Id,
+    CreateTime,
+    Username,
+    RegionCode,
+    VideoDescription,
+    MusicId,
+    LikeCount,
+    CommentCount,
+    ShareCount,
+    ViewCount,
+    HashtagNames,
+    IsStemVerified,
+    FavouritesCount,
+    VideoDuration,
+}
+
+impl VideoField {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            VideoField::Id => "id",
+            VideoField::CreateTime => "create_time",
+            VideoField::Username => "username",
+            VideoField::RegionCode => "region_code",
+            VideoField::VideoDescription => "video_description",
+            VideoField::MusicId => "music_id",
+            VideoField::LikeCount => "like_count",
+            VideoField::CommentCount => "comment_count",
+            VideoField::ShareCount => "share_count",
+            VideoField::ViewCount => "view_count",
+            VideoField::HashtagNames => "hashtag_names",
+            VideoField::IsStemVerified => "is_stem_verified",
+            VideoField::FavouritesCount => "favourites_count",
+            VideoField::VideoDuration => "video_duration",
+        }
+    }
+}
+
+impl ToString for VideoField {
+    fn to_string(&self) -> String {
+        self.as_str().to_string()
+    }
+}
 
 #[derive(Clone, Serialize, Deserialize, Debug, Builder)]
 #[builder(setter(into, strip_option))]
@@ -313,4 +358,35 @@ pub enum RegionCode {
     PN,
     TF,
     RU,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct VideoCommentsRequest {
+    pub video_id: i64,
+    pub max_count: Option<i64>,
+    pub cursor: Option<i64>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct VideoCommentsResponse {
+    pub data: ResearchVideoCommentsData,
+    pub error: ErrorResponse,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ResearchVideoCommentsData {
+    pub comments: Vec<CommentObject>,
+    pub cursor: i64,
+    pub has_more: bool,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CommentObject {
+    pub id: i64,
+    pub text: String,
+    pub video_id: i64,
+    pub parent_comment_id: Option<i64>,
+    pub like_count: i64,
+    pub reply_count: i64,
+    pub create_time: i64,
 }

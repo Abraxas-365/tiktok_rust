@@ -1,52 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::error::ErrorResponse;
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "snake_case")]
-pub enum VideoField {
-    Id,
-    CreateTime,
-    Username,
-    RegionCode,
-    VideoDescription,
-    MusicId,
-    LikeCount,
-    CommentCount,
-    ShareCount,
-    ViewCount,
-    HashtagNames,
-    IsStemVerified,
-    FavouritesCount,
-    VideoDuration,
-}
-
-impl VideoField {
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            VideoField::Id => "id",
-            VideoField::CreateTime => "create_time",
-            VideoField::Username => "username",
-            VideoField::RegionCode => "region_code",
-            VideoField::VideoDescription => "video_description",
-            VideoField::MusicId => "music_id",
-            VideoField::LikeCount => "like_count",
-            VideoField::CommentCount => "comment_count",
-            VideoField::ShareCount => "share_count",
-            VideoField::ViewCount => "view_count",
-            VideoField::HashtagNames => "hashtag_names",
-            VideoField::IsStemVerified => "is_stem_verified",
-            VideoField::FavouritesCount => "favourites_count",
-            VideoField::VideoDuration => "video_duration",
-        }
-    }
-}
-
-impl ToString for VideoField {
-    fn to_string(&self) -> String {
-        self.as_str().to_string()
-    }
-}
+use crate::{error::ErrorResponse, videos::Video};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AccessTokenRequest {
@@ -118,24 +72,6 @@ pub struct UserLikedVideosData {
     pub user_liked_videos: Vec<Video>,
     pub cursor: i64,
     pub has_more: bool,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct Video {
-    pub id: i64,
-    pub create_time: i64,
-    pub username: String,
-    pub region_code: String,
-    pub video_description: String,
-    pub music_id: i64,
-    pub like_count: i64,
-    pub comment_count: i64,
-    pub share_count: i64,
-    pub view_count: i64,
-    pub hashtag_names: Vec<String>,
-    pub video_duration: i64,
-    pub is_stem_verified: bool,
-    pub favorites_count: i64,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
