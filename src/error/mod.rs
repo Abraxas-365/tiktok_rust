@@ -2,10 +2,10 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 #[derive(Serialize, Deserialize, Debug)]
-struct ErrorResponse {
-    code: String,
-    message: String,
-    log_id: String,
+pub struct ErrorResponse {
+    pub code: String,
+    pub message: String,
+    pub log_id: String,
 }
 
 #[derive(Error, Debug)]
