@@ -21,17 +21,6 @@ pub struct RefreshTokenRequest {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct AccessTokenResponse {
-    pub access_token: String,
-    pub expires_in: i64,
-    pub open_id: String,
-    pub refresh_expires_in: i64,
-    pub refresh_token: String,
-    pub scope: String,
-    pub token_type: String,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
 pub struct UserInfoRequest {
     pub username: String,
 }

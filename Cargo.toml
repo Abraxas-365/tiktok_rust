@@ -16,3 +16,8 @@ tokio = { version = "1", features = ["full"] }
 reqwest = { version = "0.12", features = ["json", "stream"] }
 thiserror = "1.0.63"
 derive_builder = "0.20.0"
+actix-web = "4.9.0"
+rand = "0.8.5"
+base64 = "0.22.1"
+sha2 = "0.10.8"
+url = "2.5.2"
