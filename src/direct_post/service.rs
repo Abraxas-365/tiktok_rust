@@ -210,10 +210,8 @@ impl Service {
         // Call the post_video function
         let response_data = self.post_video(token, video_init_request).await?;
 
-        // Upload the video file
-        if let Some(upload_url) = response_data.upload_url {
-            self.upload_video(&upload_url, file_path).await?;
-        }
+        self.upload_video(&response_data.upload_url, file_path)
+            .await?;
 
         // Check the post status
         self.get_post_status(token, &response_data.publish_id).await

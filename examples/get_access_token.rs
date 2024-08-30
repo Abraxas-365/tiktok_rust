@@ -1,4 +1,4 @@
-use tiktok_rust::client::Service;
+use tiktok_rust::client;
 
 #[tokio::main]
 async fn main() {
@@ -8,7 +8,7 @@ async fn main() {
     // env::set_var("TIKTOK_CLIENT_SECRET", "your_client_secret");
 
     // Create an instance of the Service
-    let service = Service::new();
+    let service = client::Service::new();
 
     // Retrieve the access token
     match service.get_access_token().await {

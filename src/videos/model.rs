@@ -76,37 +76,59 @@ pub struct QueryRequest {
     pub is_random: Option<bool>,
 }
 
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug, Default)]
 pub struct Video {
+    #[serde(default)]
     pub id: i64,
+    #[serde(default)]
     pub create_time: i64,
+    #[serde(default)]
     pub username: Option<String>,
+    #[serde(default)]
     pub region_code: Option<RegionCode>,
+    #[serde(default)]
     pub video_description: Option<String>,
+    #[serde(default)]
     pub music_id: Option<i64>,
+    #[serde(default)]
     pub like_count: Option<i64>,
+    #[serde(default)]
     pub comment_count: Option<i64>,
+    #[serde(default)]
     pub share_count: Option<i64>,
+    #[serde(default)]
     pub view_count: Option<i64>,
+    #[serde(default)]
     pub effect_ids: Option<Vec<String>>,
+    #[serde(default)]
     pub hashtag_names: Option<Vec<String>>,
+    #[serde(default)]
     pub playlist_id: Option<i64>,
+    #[serde(default)]
     pub voice_to_text: Option<String>,
+    #[serde(default)]
     pub is_stem_verified: Option<bool>,
+    #[serde(default)]
     pub video_duration: Option<i64>,
+    #[serde(default)]
     pub favourites_count: Option<i64>,
 }
 
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Clone, Serialize, Deserialize, Debug, Default)]
 pub struct QueryVideoResponseData {
+    #[serde(default)]
     pub videos: Vec<Video>,
+    #[serde(default)]
     pub cursor: i64,
+    #[serde(default)]
     pub has_more: bool,
+    #[serde(default)]
     pub search_id: Option<String>,
 }
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct QueryVideoResponse {
+    #[serde(default)]
     pub data: QueryVideoResponseData,
     pub error: ErrorResponse,
 }
@@ -389,4 +411,31 @@ pub struct CommentObject {
     pub like_count: i64,
     pub reply_count: i64,
     pub create_time: i64,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_deserialize_with_empty_data() {
+        let json_data = r#"{"data":{},"error":{"code":"access_token_invalid","message":"The access token is invalid or not found in the request.","log_id":"20240829190020EBE0D84CCEA6DE000CB6"}}"#;
+        let response: QueryVideoResponse = serde_json::from_str(json_data).unwrap();
+        assert!(response.data.videos.is_empty());
+        assert_eq!(response.data.cursor, 0);
+        assert_eq!(response.data.has_more, false);
+        assert_eq!(response.data.search_id, None);
+        assert_eq!(response.error.code, "access_token_invalid");
+    }
+
+    #[test]
+    fn test_deserialize_with_data() {
+        let json_data = r#"{"data":{"videos":[],"cursor":12345,"has_more":true,"search_id":"search123"},"error":{"code":"none","message":"No error","log_id":"20240829190020EBE0D84CCEA6DE000CB6"}}"#;
+        let response: QueryVideoResponse = serde_json::from_str(json_data).unwrap();
+        assert!(response.data.videos.is_empty());
+        assert_eq!(response.data.cursor, 12345);
+        assert_eq!(response.data.has_more, true);
+        assert_eq!(response.data.search_id, Some("search123".to_string()));
+        assert_eq!(response.error.code, "none");
+    }
 }
