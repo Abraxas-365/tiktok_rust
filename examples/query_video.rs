@@ -10,7 +10,7 @@ async fn main() -> Result<(), TikTokApiError> {
     let video_service = videos::Service::new();
 
     // Retrieve the access token (You need to get permissions)
-    let token = "act.wFuFEXJGyEUHh6i3dSjwVQeAyb6YnFcDF8ONQ1R4U5p7qK2A6ldIUVG37eAv!5925.va";
+    let token = "<your user token after oauth auth_example.rs>";
 
     // Define video IDs to query
     let video_ids = vec![

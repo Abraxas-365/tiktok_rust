@@ -1,6 +1,6 @@
 [package]
 name = "tiktok_rust"
-version = "0.0.12"
+version = "0.0.13"
 edition = "2021"
 repository = "https://github.com/Abraxas-365/tiktok_api"
 license = "MIT"
