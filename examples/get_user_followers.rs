@@ -1,14 +1,14 @@
 use tiktok_rust::{
     client,
     error::TikTokApiError,
-    user::{self, UserFollowersRequest},
+    research::{self, ResearchUserFollowersRequest},
 };
 use tokio;
 
 #[tokio::main]
 async fn main() -> Result<(), TikTokApiError> {
     // Create a new Service instance
-    let user_service = user::Service::new();
+    let research_service = research::Service::new();
 
     let client_service = client::Service::new();
 
@@ -27,14 +27,14 @@ async fn main() -> Result<(), TikTokApiError> {
     };
 
     // Create a UserFollowersRequest
-    let request = UserFollowersRequest {
+    let request = ResearchUserFollowersRequest {
         username: "luisf_m99".to_string(),
         max_count: Some(20), // Number of followers to retrieve (adjust as needed)
         cursor: Some(0),     // Starting point for pagination (0 for the first request)
     };
 
     // Query user followers
-    match user_service.query_user_followers(&token, request).await {
+    match research_service.query_user_followers(&token, request).await {
         Ok(follower_data) => {
             println!("Successfully retrieved follower data:");
             println!("Cursor: {}", follower_data.cursor);

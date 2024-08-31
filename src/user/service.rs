@@ -1,18 +1,10 @@
-use crate::{error::TikTokApiError, videos::VideoField};
 use reqwest::Client;
-use std::env;
 
-use super::{
-    LikedVideosRequest, LikedVideosResponse, PinnedVideosData, PinnedVideosRequest,
-    PinnedVideosResponse, RepostedVideosData, RepostedVideosRequest, RepostedVideosResponse,
-    UserFollowerData, UserFollowersRequest, UserFollowersResponse, UserFollowingData,
-    UserFollowingRequest, UserFollowingResponse, UserInfoData, UserInfoRequest, UserInfoResponse,
-    UserLikedVideosData,
-};
+use crate::error::TikTokApiError;
+
+use super::{UserInfo, UserInfoResponse};
 
 pub struct Service {
-    client_key: String,
-    client_secret: String,
     base_url: String,
 }
 
@@ -23,26 +15,7 @@ impl Service {
     ///
     /// Panics if the `TIKTOK_CLIENT_KEY` or `TIKTOK_CLIENT_SECRET` environment variables are not set.
     pub fn new() -> Self {
-        let client_key = env::var("TIKTOK_CLIENT_KEY").expect("TIKTOK_CLIENT_KEY must be set");
-        let client_secret =
-            env::var("TIKTOK_CLIENT_SECRET").expect("TIKTOK_CLIENT_SECRET must be set");
         Self {
-            client_key,
-            client_secret,
-            base_url: String::from("https://open.tiktokapis.com"),
-        }
-    }
-
-    /// Creates a new instance of the Service with the provided client key and secret.
-    ///
-    /// # Arguments
-    ///
-    /// * `client_key` - A string slice that holds the client key.
-    /// * `client_secret` - A string slice that holds the client secret.
-    pub fn with_credentials(client_key: &str, client_secret: &str) -> Self {
-        Self {
-            client_key: client_key.into(),
-            client_secret: client_secret.into(),
             base_url: String::from("https://open.tiktokapis.com"),
         }
     }
@@ -59,39 +32,20 @@ impl Service {
 }
 
 impl Service {
-    /// Queries user info using the TikTok API.
-    ///
-    /// # Arguments
-    ///
-    /// * `token` - The client access token.
-    /// * `fields` - A list of `VideoField` enums for the desired data.
-    /// * `request` - A `UserInfoRequest` struct that holds the request parameters.
-    ///
-    /// # Returns
-    ///
-    /// A `Result` containing a `UserInfoData` on success, or a `TikTokApiError` on failure.
-    pub async fn query_user_info(
+    pub async fn get_user_info(
         &self,
-        token: &str,
-        fields: &[VideoField],
-        request: UserInfoRequest,
-    ) -> Result<UserInfoData, TikTokApiError> {
+        access_token: &str,
+        fields: Vec<&str>,
+    ) -> Result<UserInfo, TikTokApiError> {
         let client = Client::new();
-        let fields_str = fields
-            .iter()
-            .map(|f| f.to_string())
-            .collect::<Vec<_>>()
-            .join(",");
-        let url = format!(
-            "{}/v2/research/user/info/?fields={}",
-            self.base_url, fields_str
-        );
+        let url = format!("{}/v2/user/info/", self.base_url);
+
+        let fields_str = fields.join(",");
 
         let response = client
-            .post(&url)
-            .header("Authorization", format!("Bearer {}", token))
-            .header("Content-Type", "application/json")
-            .json(&request)
+            .get(&url)
+            .query(&[("fields", fields_str)])
+            .header("Authorization", format!("Bearer {}", access_token))
             .send()
             .await
             .map_err(|e| TikTokApiError::RequestFailed(e.to_string()))?;
@@ -106,254 +60,9 @@ impl Service {
             serde_json::from_str(&body).map_err(|e| TikTokApiError::ParseFailed(e.to_string()))?;
 
         if status.is_success() && user_info_response.error.code == "ok" {
-            Ok(user_info_response.data)
+            Ok(user_info_response.data.user)
         } else {
             Err(TikTokApiError::from(user_info_response.error))
-        }
-    }
-
-    /// Queries liked videos using the TikTok API.
-    ///
-    /// # Arguments
-    ///
-    /// * `token` - The client access token.
-    /// * `fields` - A list of `VideoField` enums for the desired data.
-    /// * `request` - A `LikedVideosRequest` struct that holds the request parameters.
-    ///
-    /// # Returns
-    ///
-    /// A `Result` containing a `UserLikedVideosData` on success, or a `TikTokApiError` on failure.
-    pub async fn query_liked_videos(
-        &self,
-        token: &str,
-        fields: &[VideoField],
-        request: LikedVideosRequest,
-    ) -> Result<UserLikedVideosData, TikTokApiError> {
-        let client = Client::new();
-        let fields_str = fields
-            .iter()
-            .map(|f| f.to_string())
-            .collect::<Vec<_>>()
-            .join(",");
-        let url = format!(
-            "{}/v2/research/user/liked_videos/?fields={}",
-            self.base_url, fields_str
-        );
-
-        let response = client
-            .post(&url)
-            .header("Authorization", format!("Bearer {}", token))
-            .header("Content-Type", "application/json")
-            .json(&request)
-            .send()
-            .await
-            .map_err(|e| TikTokApiError::RequestFailed(e.to_string()))?;
-
-        let status = response.status();
-        let body = response
-            .text()
-            .await
-            .map_err(|e| TikTokApiError::ResponseReadFailed(e.to_string()))?;
-
-        let liked_videos_response: LikedVideosResponse =
-            serde_json::from_str(&body).map_err(|e| TikTokApiError::ParseFailed(e.to_string()))?;
-
-        if status.is_success() && liked_videos_response.error.code == "ok" {
-            Ok(liked_videos_response.data)
-        } else {
-            Err(TikTokApiError::from(liked_videos_response.error))
-        }
-    }
-
-    /// Queries pinned videos using the TikTok API.
-    ///
-    /// # Arguments
-    ///
-    /// * `token` - The client access token.
-    /// * `fields` - A list of `VideoField` enums for the desired data.
-    /// * `request` - A `PinnedVideosRequest` struct that holds the request parameters.
-    ///
-    /// # Returns
-    ///
-    /// A `Result` containing a `PinnedVideosData` on success, or a `TikTokApiError` on failure.
-    pub async fn query_pinned_videos(
-        &self,
-        token: &str,
-        fields: &[VideoField],
-        request: PinnedVideosRequest,
-    ) -> Result<PinnedVideosData, TikTokApiError> {
-        let client = Client::new();
-        let fields_str = fields
-            .iter()
-            .map(|f| f.to_string())
-            .collect::<Vec<_>>()
-            .join(",");
-        let url = format!(
-            "{}/v2/research/user/pinned_videos/?fields={}",
-            self.base_url, fields_str
-        );
-
-        let response = client
-            .post(&url)
-            .header("Authorization", format!("Bearer {}", token))
-            .header("Content-Type", "application/json")
-            .json(&request)
-            .send()
-            .await
-            .map_err(|e| TikTokApiError::RequestFailed(e.to_string()))?;
-
-        let status = response.status();
-        let body = response
-            .text()
-            .await
-            .map_err(|e| TikTokApiError::ResponseReadFailed(e.to_string()))?;
-
-        let pinned_videos_response: PinnedVideosResponse =
-            serde_json::from_str(&body).map_err(|e| TikTokApiError::ParseFailed(e.to_string()))?;
-
-        if status.is_success() && pinned_videos_response.error.code == "ok" {
-            Ok(pinned_videos_response.data)
-        } else {
-            Err(TikTokApiError::from(pinned_videos_response.error))
-        }
-    }
-
-    /// Queries user followers using the TikTok API.
-    ///
-    /// # Arguments
-    ///
-    /// * `token` - The client access token.
-    /// * `request` - A `UserFollowersRequest` struct that holds the request parameters.
-    ///
-    /// # Returns
-    ///
-    /// A `Result` containing a `UserFollowerData` on success, or a `TikTokApiError` on failure.
-    pub async fn query_user_followers(
-        &self,
-        token: &str,
-        request: UserFollowersRequest,
-    ) -> Result<UserFollowerData, TikTokApiError> {
-        let client = Client::new();
-        let url = format!("{}/v2/research/user/followers/", self.base_url);
-
-        let response = client
-            .post(&url)
-            .header("Authorization", format!("Bearer {}", token))
-            .header("Content-Type", "application/json")
-            .json(&request)
-            .send()
-            .await
-            .map_err(|e| TikTokApiError::RequestFailed(e.to_string()))?;
-
-        let status = response.status();
-        let body = response
-            .text()
-            .await
-            .map_err(|e| TikTokApiError::ResponseReadFailed(e.to_string()))?;
-
-        let user_followers_response: UserFollowersResponse =
-            serde_json::from_str(&body).map_err(|e| TikTokApiError::ParseFailed(e.to_string()))?;
-
-        if status.is_success() && user_followers_response.error.code == "ok" {
-            Ok(user_followers_response.data)
-        } else {
-            Err(TikTokApiError::from(user_followers_response.error))
-        }
-    }
-
-    /// Queries user following using the TikTok API.
-    ///
-    /// # Arguments
-    ///
-    /// * `token` - The client access token.
-    /// * `request` - A `UserFollowingRequest` struct that holds the request parameters.
-    ///
-    /// # Returns
-    ///
-    /// A `Result` containing a `UserFollowingData` on success, or a `TikTokApiError` on failure.
-    pub async fn query_user_following(
-        &self,
-        token: &str,
-        request: UserFollowingRequest,
-    ) -> Result<UserFollowingData, TikTokApiError> {
-        let client = Client::new();
-        let url = format!("{}/v2/research/user/following/", self.base_url);
-
-        let response = client
-            .post(&url)
-            .header("Authorization", format!("Bearer {}", token))
-            .header("Content-Type", "application/json")
-            .json(&request)
-            .send()
-            .await
-            .map_err(|e| TikTokApiError::RequestFailed(e.to_string()))?;
-
-        let status = response.status();
-        let body = response
-            .text()
-            .await
-            .map_err(|e| TikTokApiError::ResponseReadFailed(e.to_string()))?;
-
-        let user_following_response: UserFollowingResponse =
-            serde_json::from_str(&body).map_err(|e| TikTokApiError::ParseFailed(e.to_string()))?;
-
-        if status.is_success() && user_following_response.error.code == "ok" {
-            Ok(user_following_response.data)
-        } else {
-            Err(TikTokApiError::from(user_following_response.error))
-        }
-    }
-
-    /// Queries reposted videos using the TikTok API.
-    ///
-    /// # Arguments
-    ///
-    /// * `token` - The client access token.
-    /// * `fields` - A list of `VideoField` enums for the desired data.
-    /// * `request` - A `RepostedVideosRequest` struct that holds the request parameters.
-    ///
-    /// # Returns
-    ///
-    /// A `Result` containing a `RepostedVideosData` on success, or a `TikTokApiError` on failure.
-    pub async fn query_reposted_videos(
-        &self,
-        token: &str,
-        fields: &[VideoField],
-        request: RepostedVideosRequest,
-    ) -> Result<RepostedVideosData, TikTokApiError> {
-        let client = Client::new();
-        let fields_str = fields
-            .iter()
-            .map(|f| f.to_string())
-            .collect::<Vec<_>>()
-            .join(",");
-        let url = format!(
-            "{}/v2/research/user/reposted_videos/?fields={}",
-            self.base_url, fields_str
-        );
-
-        let response = client
-            .post(&url)
-            .header("Authorization", format!("Bearer {}", token))
-            .header("Content-Type", "application/json")
-            .json(&request)
-            .send()
-            .await
-            .map_err(|e| TikTokApiError::RequestFailed(e.to_string()))?;
-
-        let status = response.status();
-        let body = response
-            .text()
-            .await
-            .map_err(|e| TikTokApiError::ResponseReadFailed(e.to_string()))?;
-
-        let reposted_videos_response: RepostedVideosResponse =
-            serde_json::from_str(&body).map_err(|e| TikTokApiError::ParseFailed(e.to_string()))?;
-
-        if status.is_success() && reposted_videos_response.error.code == "ok" {
-            Ok(reposted_videos_response.data)
-        } else {
-            Err(TikTokApiError::from(reposted_videos_response.error))
         }
     }
 }
