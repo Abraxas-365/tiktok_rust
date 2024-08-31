@@ -1,10 +1,11 @@
 use crate::error::TikTokApiError;
 
-use super::{
-    QueryRequest, QueryVideoResponse, QueryVideoResponseData, ResearchVideoCommentsData,
-    VideoCommentsRequest, VideoCommentsResponse, VideoField,
-};
 use reqwest::Client;
+
+use super::{
+    ListVideoRequest, ListVideoResponse, QueryVideoRequest, QueryVideoResponse,
+    UserVideoListPostResponseData, Video, VideoField, VideoFilters,
+};
 
 pub struct Service {
     base_url: String,
@@ -28,39 +29,41 @@ impl Service {
         self
     }
 
-    /// Queries videos using the TikTok API.
+    /// Query videos for the authenticated user.
     ///
     /// # Arguments
     ///
-    /// * `token` - The API token.
-    /// * `fields` - A list of `VideoField` enums for the desired data.
-    /// * `request` - A `QueryRequest` struct that holds the query parameters.
+    /// * `access_token` - The OAuth access token for the authenticated user.
+    /// * `video_ids` - A vector of video IDs to query.
+    /// * `fields` - A vector of VideoField enum values to request.
     ///
     /// # Returns
     ///
-    /// A `Result` containing a `QueryVideoResponseData` on success, or a `TikTokApiError` on failure.
+    /// Returns a Result containing a Vec<Video> if successful, or a TikTokApiError if an error occurs.
     pub async fn query_videos(
         &self,
-        token: &str,
-        fields: &[VideoField],
-        request: QueryRequest,
-    ) -> Result<QueryVideoResponseData, TikTokApiError> {
+        access_token: &str,
+        video_ids: Vec<String>,
+        fields: Vec<VideoField>,
+    ) -> Result<Vec<Video>, TikTokApiError> {
         let client = Client::new();
+        let url = format!("{}/v2/video/query/", self.base_url);
+
         let fields_str = fields
             .iter()
-            .map(|f| f.to_string())
+            .map(|f| f.as_str())
             .collect::<Vec<_>>()
             .join(",");
-        let url = format!(
-            "{}/v2/research/video/query/?fields={}",
-            self.base_url, fields_str
-        );
+        let request_body = QueryVideoRequest {
+            filters: VideoFilters { video_ids },
+        };
 
         let response = client
             .post(&url)
-            .header("Authorization", format!("Bearer {}", token))
+            .query(&[("fields", fields_str)])
+            .header("Authorization", format!("Bearer {}", access_token))
             .header("Content-Type", "application/json")
-            .json(&request)
+            .json(&request_body)
             .send()
             .await
             .map_err(|e| TikTokApiError::RequestFailed(e.to_string()))?;
@@ -75,40 +78,48 @@ impl Service {
             serde_json::from_str(&body).map_err(|e| TikTokApiError::ParseFailed(e.to_string()))?;
 
         if status.is_success() && query_video_response.error.code == "ok" {
-            Ok(query_video_response.data)
+            Ok(query_video_response.data.videos)
         } else {
             Err(TikTokApiError::from(query_video_response.error))
         }
     }
 
-    /// Queries video comments using the TikTok API.
+    /// List videos for the authenticated user.
     ///
     /// # Arguments
     ///
-    /// * `token` - The API token.
-    /// * `fields` - A comma-separated list of field names for the desired data.
-    /// * `request` - A `VideoCommentsRequest` struct that holds the query parameters.
+    /// * `access_token` - The OAuth access token for the authenticated user.
+    /// * `cursor` - Optional cursor for pagination.
+    /// * `max_count` - Optional maximum number of videos to return (default is 10, maximum is 20).
+    /// * `fields` - A vector of VideoField enum values to request.
     ///
     /// # Returns
     ///
-    /// A `Result` containing a `ResearchVideoCommentsData` on success, or a `TikTokApiError` on failure.
-    pub async fn query_video_comments(
+    /// Returns a Result containing UserVideoListPostResponseData if successful, or a TikTokApiError if an error occurs.
+    pub async fn list_videos(
         &self,
-        token: &str,
-        fields: &str,
-        request: VideoCommentsRequest,
-    ) -> Result<ResearchVideoCommentsData, TikTokApiError> {
+        access_token: &str,
+        cursor: Option<i64>,
+        max_count: Option<i32>,
+        fields: Vec<VideoField>,
+    ) -> Result<UserVideoListPostResponseData, TikTokApiError> {
         let client = Client::new();
-        let url = format!(
-            "{}/v2/research/video/comment/list/?fields={}",
-            self.base_url, fields
-        );
+        let url = format!("{}/v2/video/list/", self.base_url);
+
+        let fields_str = fields
+            .iter()
+            .map(|f| f.as_str())
+            .collect::<Vec<_>>()
+            .join(",");
+
+        let request_body = ListVideoRequest { cursor, max_count };
 
         let response = client
             .post(&url)
-            .header("Authorization", format!("Bearer {}", token))
+            .query(&[("fields", fields_str)])
+            .header("Authorization", format!("Bearer {}", access_token))
             .header("Content-Type", "application/json")
-            .json(&request)
+            .json(&request_body)
             .send()
             .await
             .map_err(|e| TikTokApiError::RequestFailed(e.to_string()))?;
@@ -119,13 +130,13 @@ impl Service {
             .await
             .map_err(|e| TikTokApiError::ResponseReadFailed(e.to_string()))?;
 
-        let video_comments_response: VideoCommentsResponse =
+        let list_video_response: ListVideoResponse =
             serde_json::from_str(&body).map_err(|e| TikTokApiError::ParseFailed(e.to_string()))?;
 
-        if status.is_success() && video_comments_response.error.code == "ok" {
-            Ok(video_comments_response.data)
+        if status.is_success() && list_video_response.error.code == "ok" {
+            Ok(list_video_response.data)
         } else {
-            Err(TikTokApiError::from(video_comments_response.error))
+            Err(TikTokApiError::from(list_video_response.error))
         }
     }
 }
