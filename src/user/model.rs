@@ -97,14 +97,18 @@ pub struct UserFollowersRequest {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UserFollowersResponse {
+    #[serde(default)]
     pub data: UserFollowerData,
     pub error: ErrorResponse,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 pub struct UserFollowerData {
+    #[serde(default)]
     pub user_followers: Vec<UserInfo>,
+    #[serde(default)]
     pub cursor: i64,
+    #[serde(default)]
     pub has_more: bool,
 }
 

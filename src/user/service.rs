@@ -26,7 +26,6 @@ impl Service {
         let client_key = env::var("TIKTOK_CLIENT_KEY").expect("TIKTOK_CLIENT_KEY must be set");
         let client_secret =
             env::var("TIKTOK_CLIENT_SECRET").expect("TIKTOK_CLIENT_SECRET must be set");
-        println!("hola{}", client_key);
         Self {
             client_key,
             client_secret,

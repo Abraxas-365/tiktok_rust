@@ -4,7 +4,7 @@ use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
 use tiktok_rust::auth::{AuthCallback, AuthService, OAuthConfig, TikTokScope};
 
 const CLIENT_KEY: &str = "<client-key>";
-const CLIENT_SECRET: &str = "<client-secret>"; // Make sure to set this
+const CLIENT_SECRET: &str = "client-secret>"; // Make sure to set this
 const REDIRECT_URI: &str =
     "https://df12-2001-1388-19-4828-4a3-c2fb-8272-1935.ngrok-free.app/auth/callback";
 
