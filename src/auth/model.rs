@@ -8,12 +8,40 @@ pub enum TikTokScope {
     ArtistCertificationRead,
     #[serde(rename = "artist.certification.update")]
     ArtistCertificationUpdate,
+    #[serde(rename = "portability.activity.ongoing")]
+    PortabilityActivityOngoing,
+    #[serde(rename = "portability.activity.single")]
+    PortabilityActivitySingle,
+    #[serde(rename = "portability.all.ongoing")]
+    PortabilityAllOngoing,
+    #[serde(rename = "portability.all.single")]
+    PortabilityAllSingle,
+    #[serde(rename = "portability.directmessages.ongoing")]
+    PortabilityDirectMessagesOngoing,
+    #[serde(rename = "portability.directmessages.single")]
+    PortabilityDirectMessagesSingle,
+    #[serde(rename = "portability.postsandprofile.ongoing")]
+    PortabilityPostsAndProfileOngoing,
+    #[serde(rename = "portability.postsandprofile.single")]
+    PortabilityPostsAndProfileSingle,
+    #[serde(rename = "research.adlib.basic")]
+    ResearchAdlibBasic,
+    #[serde(rename = "research.data.basic")]
+    ResearchDataBasic,
+    #[serde(rename = "research.data.u18eu")]
+    ResearchDataU18EU,
+    #[serde(rename = "user.info.basic")]
+    UserInfoBasic,
     #[serde(rename = "user.info.profile")]
     UserInfoProfile,
     #[serde(rename = "user.info.stats")]
     UserInfoStats,
     #[serde(rename = "video.list")]
     VideoList,
+    #[serde(rename = "video.publish")]
+    VideoPublish,
+    #[serde(rename = "video.upload")]
+    VideoUpload,
 }
 
 impl TikTokScope {
@@ -21,9 +49,23 @@ impl TikTokScope {
         match self {
             TikTokScope::ArtistCertificationRead => "artist.certification.read",
             TikTokScope::ArtistCertificationUpdate => "artist.certification.update",
+            TikTokScope::PortabilityActivityOngoing => "portability.activity.ongoing",
+            TikTokScope::PortabilityActivitySingle => "portability.activity.single",
+            TikTokScope::PortabilityAllOngoing => "portability.all.ongoing",
+            TikTokScope::PortabilityAllSingle => "portability.all.single",
+            TikTokScope::PortabilityDirectMessagesOngoing => "portability.directmessages.ongoing",
+            TikTokScope::PortabilityDirectMessagesSingle => "portability.directmessages.single",
+            TikTokScope::PortabilityPostsAndProfileOngoing => "portability.postsandprofile.ongoing",
+            TikTokScope::PortabilityPostsAndProfileSingle => "portability.postsandprofile.single",
+            TikTokScope::ResearchAdlibBasic => "research.adlib.basic",
+            TikTokScope::ResearchDataBasic => "research.data.basic",
+            TikTokScope::ResearchDataU18EU => "research.data.u18eu",
+            TikTokScope::UserInfoBasic => "user.info.basic",
             TikTokScope::UserInfoProfile => "user.info.profile",
             TikTokScope::UserInfoStats => "user.info.stats",
             TikTokScope::VideoList => "video.list",
+            TikTokScope::VideoPublish => "video.publish",
+            TikTokScope::VideoUpload => "video.upload",
         }
     }
 }

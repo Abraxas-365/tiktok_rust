@@ -8,6 +8,7 @@ use reqwest::Client;
 use serde_json::json;
 use tokio::{fs::File, io::AsyncReadExt};
 
+/// # Please review our URL ownership verification rules at https://developers.tiktok.com/doc/content-posting-api-media-transfer-guide/#pull_from_url,
 pub struct Service {
     base_url: String,
 }

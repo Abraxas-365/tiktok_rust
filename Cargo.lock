@@ -1650,7 +1650,7 @@ dependencies = [
 
 [[package]]
 name = "tiktok_rust"
-version = "0.0.8"
+version = "0.0.9"
 dependencies = [
  "actix-web",
  "base64",

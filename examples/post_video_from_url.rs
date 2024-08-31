@@ -2,8 +2,10 @@ use tiktok_rust::direct_post::{self, PostInfoBuilder, PrivacyLevel};
 
 #[tokio::main]
 async fn main() {
+    // Please review our URL ownership verification rules at https://developers.tiktok.com/doc/content-posting-api-media-transfer-guide/#pull_from_url,
     // Retrieve the access token
-    let token = "Your user token";
+    let token = "<The user token, after oauth>";
+
     // Create an instance of the Service
     let service = direct_post::Service::new();
 
